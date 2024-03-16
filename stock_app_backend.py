@@ -46,5 +46,4 @@ async def get_price(request: Request, symbol):
             "symbol": symbol
         }
     )
-
     pass
