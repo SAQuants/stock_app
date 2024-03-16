@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.js"></script>
+    <title>Stock App</title>
+</head>
+<body>
+    <div class="ui container">
+        <h2><a href="/">Stocks</a> <i class="angle double left icon"></i>{{symbol}} Price</h2>
+        <table class="ui striped table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Open</th>
+                    <th>High</th>
+                    <th>Low</th>
+                    <th>Close</th>
+                    <th>Volume</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ohlcv in time_series %}
+                <tr>
+                    <td>{{ ohlcv.Date }}</td>
+                    <td>{{ ohlcv.Open }}</td>
+                    <td>{{ ohlcv.High }}</td>
+                    <td>{{ ohlcv.Low }}</td>
+                    <td>{{ ohlcv.Close }}</td>
+                    <td>{{ ohlcv.Volume }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

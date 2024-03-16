@@ -2,3 +2,6 @@ pandas
 streamlit
 yfinance
 plotly
+fastapi
+uvicorn
+jinja2

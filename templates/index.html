@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.js"></script>
+    <title>Stock App</title>
+</head>
+<body>
+    <div class="ui container">
+        <h2>Supported Symbol List</h2>
+        <table class="ui striped table">
+            <thead>
+                <tr>
+                    <th>Symbol</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for symbol_info in supported_symbols %}
+                <tr>
+                    <td>{{ symbol_info.symbol }}</td>
+                    <td><a href="/symbol/{{symbol_info.symbol}}">{{ symbol_info.name }}</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
