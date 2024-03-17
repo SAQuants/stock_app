@@ -32,7 +32,9 @@ async def get_list(request: Request):
     if len(accept.split(",")) > 1:
         print('get_list: returning html')
         return templates.TemplateResponse(
-            request=request, name="index.html", context={"supported_symbols": supported_symbols})
+            request=request,
+            name="index.html",
+            context={"supported_symbols": supported_symbols})
     else:
         print('get_list: returning data')
         return supported_symbols
