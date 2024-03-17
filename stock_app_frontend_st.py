@@ -4,11 +4,18 @@ import yfinance as yf
 import pandas as pd
 import plotly.express as px
 from datetime import datetime
+import requests
+import io
 
 # test comment
 
 def get_stock_data(ticker, start_date, end_date):
-    stock_data = yf.download(ticker, start=start_date, end=end_date)
+    ## stock_data = yf.download(ticker, start=start_date, end=end_date)
+    json_str = requests.get(f"http://localhost:8000/symbol/{ticker}").json()
+    # print(type(json_str))
+    stock_data = pd.read_json(io.StringIO(json_str))
+    stock_data['Date'] = stock_data['Date'].dt.date
+    stock_data.set_index('Date', inplace=True)
     return stock_data
 
 
