@@ -1,66 +1,62 @@
 from fastapi import FastAPI, Request
 # $ uvicorn stock_app_backend:app --reload
 from fastapi.templating import Jinja2Templates
-import yfinance as yf
-from datetime import datetime
+
+from market_data import get_supported_symbols, get_symbol_ts, get_symbol_info
+from backtest import execute_backtest
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
-def get_supported_symbols():
-    supported_symbols = [
-        {"symbol": "SPY", "name": "SPDR S&P 500 ETF Trust"},
-        {"symbol": "VUG", "name": "US large-cap growth stocks"},
-        {"symbol": "VTV", "name": "Developed-market large-cap stocks"}
-    ]
-    return supported_symbols
+def get_response_type(request: Request):
+    accept = request.headers["accept"]
+    print(f'accept: {accept}, len(accept.split(",")): {len(accept.split(","))}')
+    if len(accept.split(",")) > 1:
+        print('get_response_type: html')
+        return 'html'
+    else:
+        print('get_response_type: data')
+        return 'data'
 
-def get_stock_data(symbol,
-                   start_date=datetime.strptime("2023-01-01", "%Y-%m-%d"),
-                   end_date=datetime.strptime("2024-01-01", "%Y-%m-%d")):
-    stock_data = yf.download(symbol, start=start_date, end=end_date)
-    return stock_data
 
 @app.get("/")
 async def get_list(request: Request):
     # print(dir(request))
     # print(request.headers)
-    supported_symbols = get_supported_symbols()
-    # return {"Supported List": supported_symbols}
-    accept = request.headers["accept"]
-    print(f'accept: {accept}, len(accept.split(",")): {len(accept.split(","))}')
-    if len(accept.split(",")) > 1:
-        print('get_list: returning html')
+    symbol_info_list = get_supported_symbols()
+    if get_response_type(request) == 'html':
         return templates.TemplateResponse(
             request=request,
             name="index.html",
-            context={"supported_symbols": supported_symbols})
+            context={"supported_symbols": symbol_info_list})
     else:
-        print('get_list: returning data')
-        return supported_symbols
+        return symbol_info_list
 
 @app.get("/symbol/{symbol}")
-async def get_price(request: Request, symbol):
-    # print(symbol)
+async def get_details(request: Request, symbol):
     # print(request.headers)
-    ts = get_stock_data(symbol).reset_index()
-    ts['Date'] = ts['Date'].dt.date
-    ts[['Open','High', 'Low', 'Close']] = ts[['Open','High', 'Low', 'Close']].round(2)
-    # print(ts.head(2))
-    # return ts.to_dict('records')
-    accept = request.headers["accept"]
-    print(f'accept: {accept}, len(accept.split(",")): {len(accept.split(","))}')
-    if len(accept.split(",")) > 1:
-        print('get_price: returning html')
+
+    backtest = request.query_params.get('backtest', False)
+    # print(symbol, backtest)
+    if backtest:
+        return get_backtest_results(request, symbol, backtest)
+    else:
+        return get_symbol_data(request,symbol)
+
+def get_symbol_data(request,symbol):
+    symbol_info = get_symbol_info(symbol)
+    stock_ts = get_symbol_ts(symbol)
+    if get_response_type(request) == 'html':
         return templates.TemplateResponse(
             request=request,
             name="symbol_price.html",
             context={
-                "time_series" : ts.to_dict('records'),
-                "symbol": symbol
+                "time_series": stock_ts.to_dict('records'),
+                "symbol_info": symbol_info
             }
         )
     else:
-        print('get_price: returning data')
-        return ts.to_json()
-    pass
+        return stock_ts.to_json()
+
+def get_backtest_results(request, symbol, backtest):
+    return execute_backtest(symbol, backtest)
