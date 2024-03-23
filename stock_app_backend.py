@@ -3,7 +3,7 @@ from fastapi import FastAPI, Request
 from fastapi.templating import Jinja2Templates
 
 from market_data import get_supported_symbols, get_symbol_ts, get_symbol_info
-from backtest import execute_backtest
+from backtest_launcher import execute_backtest
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -58,5 +58,5 @@ def get_symbol_data(request,symbol):
     else:
         return stock_ts.to_json()
 
-def get_backtest_results(request, symbol, backtest):
-    return execute_backtest(symbol, backtest)
+def get_backtest_results(request, symbol, backtest_name):
+    return execute_backtest(backtest_name, symbol)
