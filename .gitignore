@@ -145,3 +145,7 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+# lean sub-folders
+# lean_base/**/backtests/
+#lean generated config file
+lean_base/**/config.json
