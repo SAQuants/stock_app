@@ -31,4 +31,4 @@ def execute_backtest(backtest_name, symbol="SPY", start_date="20220601", end_dat
     pass
 
 if __name__ == "__main__":
-    execute_backtest("spy_bb", "IBM", "20190101", "20210101")
+    execute_backtest("strategy_bb_rsi", "AAPL", "20190101", "20210101")
