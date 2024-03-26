@@ -1,7 +1,10 @@
 # region imports
+import pandas as pd
 from AlgorithmImports import *
 from datetime import datetime
 import json
+
+LEAN_RESULTS_DIR ='/Results'
 # endregion
 
 class SpyBB(QCAlgorithm):
@@ -9,25 +12,32 @@ class SpyBB(QCAlgorithm):
     def Initialize(self):
 
         # self.Log(f'getcwd: {os.getcwd()}')
-        # self.Log(f'listdir: {os.listdir()}')
+        # dir_obj = os.scandir('/')
+        # sub_dir = [ files.name for files in dir_obj if files.is_dir()]
+        # self.Log(f'Initialize scandir: {sub_dir}')
         # Convert JSON string to Pandas DataFrame
         # Retrieve JSON data from the file
         start_date_str = "20190101"
         end_date_str = "20220101"
         symbol = "SPY"
+        self.benchmark_symbol = "SPY"
         with open("config.json", "r") as file:
             json_obj = json.load(file)
             start_date_str = json_obj["start_date"] if "start_date" in json_obj else start_date_str
             end_date_str = json_obj["end_date"] if "end_date" in json_obj else end_date_str
             symbol = json_obj["symbol"] if "symbol" in json_obj else symbol
+            self.benchmark_symbol = json_obj["benchmark_symbol"] if "benchmark_symbol" in json_obj else self.benchmark_symbol
         # Read the start date from the environment variable
 
         start_date = datetime.strptime(start_date_str, "%Y%m%d")
         end_date = datetime.strptime(end_date_str, "%Y%m%d")
-        self.Log(f"Environment start_date={start_date},end_date={end_date},symbol={symbol}")
+
+        self.Log(f"Environment Info: "
+                 f"start_date={start_date},end_date={end_date},symbol={symbol},"
+                 f"benchmark_symbol={self.benchmark_symbol}")
 
         self.SetStartDate(start_date.year, start_date.month, start_date.day)
-        self.SetEndDate(end_date.year, end_date.month, end_date.day) # (2022, 1, 1)  # Set End Date
+        self.SetEndDate(end_date.year, end_date.month, end_date.day)  # (2022, 1, 1)  # Set End Date
         self.SetCash(100000)  # Set Strategy Cash
 
         length = 30
@@ -44,9 +54,18 @@ class SpyBB(QCAlgorithm):
         #    self.bb.Update(time, price)
         # self.sma.Update(time, price)
 
-        self.SetBenchmark(self.symbol)
+        self.SetBenchmark(self.benchmark_symbol)
         self.initialPortfolioValue = self.Portfolio.TotalPortfolioValue
         self.initialBenchmarkPrice = None
+
+        self.df_order_plot = pd.DataFrame(columns=['Time',
+                                                   'OrderID', 'Symbol',
+                                                   'Status', 'Quantity',
+                                                   'FillQuantity', 'FillPrice',
+                                                   'OrderFee'])
+        self.df_timeseries = pd.DataFrame(columns=['Time', 'Price', 'bb-MiddleBand',
+                                                   'bb-UpperBand', 'bb-LowerBand',
+                                                   'Benchmark'])
 
         stockPlot = Chart('Trade Plot')
         stockPlot.AddSeries(Series('Buy', SeriesType.Scatter, '$',
@@ -72,12 +91,16 @@ class SpyBB(QCAlgorithm):
         if not slice.ContainsKey(self.symbol) or slice[self.symbol] is None:
             return
 
-            # data = slice[self.spy]
+        # data = slice[self.spy]
         price = slice[self.symbol].Price
-        spy_obj = slice[self.symbol]
-        #self.Debug(f'Symbol: {spy_obj.Symbol}, Time: {spy_obj.Time}, Price:{spy_obj.Price}, '
-        #           f'Open: {spy_obj.Open}, High: {spy_obj.High}, '
-        #           f'Low: {spy_obj.Low}, Close: {spy_obj.Close}')
+        # sym_obj = slice[self.symbol]
+        # self.Debug(f'Symbol: {sym_obj.Symbol}, Time: {sym_obj.Time}, Price:{sym_obj.Price}, '
+        #           f'Open: {sym_obj.Open}, High: {sym_obj.High}, '
+        #           f'Low: {sym_obj.Low}, Close: {sym_obj.Close}')
+        # self.Debug(f'{self.Time}, {price},'
+        #            f'{self.bb.MiddleBand.Current.Value}, {self.bb.UpperBand.Current.Value},'
+        #            f'{self.bb.LowerBand.Current.Value},'
+        #            f'{self.Benchmark.Evaluate(self.Time)}')
 
         self.Plot("Trade Plot", "Price", price)
         self.Plot("Trade Plot", "bb-MiddleBand", self.bb.MiddleBand.Current.Value)
@@ -85,6 +108,11 @@ class SpyBB(QCAlgorithm):
         self.Plot("Trade Plot", "bb-LowerBand", self.bb.LowerBand.Current.Value)
         self.Plot("Trade Plot", "Benchmark", self.Benchmark.Evaluate(self.Time))
         # self.Plot("Trade Plot", "SMA", self.sma.Current.Value)
+        self.df_timeseries.loc[len(self.df_timeseries)] = [self.Time,price,
+                                                           self.bb.MiddleBand.Current.Value,
+                                                           self.bb.UpperBand.Current.Value,
+                                                           self.bb.LowerBand.Current.Value,
+                                                           self.Benchmark.Evaluate(self.Time)]
 
         currentBenchmarkPrice = self.Benchmark.Evaluate(self.Time)
         if self.initialBenchmarkPrice is None:
@@ -122,4 +150,19 @@ class SpyBB(QCAlgorithm):
         order = self.Transactions.GetOrderById(order_event.OrderId)
         if order_event.Status == OrderStatus.Filled:
             # self.Debug(f"Order filled: {orderEvent.Symbol}")
-            self.Debug(f"{self.Time}: {order.Type}: {order_event}")
+            self.Debug(f"order.Type: {order.Type} OrderEvent: {order_event}")
+            self.df_order_plot.loc[len(self.df_order_plot)] = [self.Time,
+                                                               order_event.OrderId,
+                                                               order_event.Symbol,
+                                                               order_event.Status,
+                                                               order_event.Quantity,
+                                                               order_event.FillQuantity,
+                                                               order_event.FillPrice,
+                                                               order_event.OrderFee
+                                                               ]
+
+    def OnEndOfAlgorithm(self) -> None:
+        self.df_order_plot.to_csv(f'{LEAN_RESULTS_DIR}/df_order_plot.csv')
+        self.df_timeseries.to_csv(f'{LEAN_RESULTS_DIR}/df_timeseries.csv')
+        #self.Log(self.df_timeseries)
+        self.Debug("Algorithm done")
