@@ -3,8 +3,9 @@ import pandas as pd
 from AlgorithmImports import *
 from datetime import datetime
 import json
-
+import os
 LEAN_RESULTS_DIR ='/Results'
+LEAN_BASE_DIR = '/LeanCLI/'
 # endregion
 
 class SpyBB(QCAlgorithm):
@@ -14,26 +15,32 @@ class SpyBB(QCAlgorithm):
         # self.Log(f'getcwd: {os.getcwd()}')
         # dir_obj = os.scandir('/')
         # sub_dir = [ files.name for files in dir_obj if files.is_dir()]
-        # self.Log(f'Initialize scandir: {sub_dir}')
+        # self.Log(f'Initialize scandir(/) results:\n {sub_dir}')
+        # for current_path, folders, files in os.walk('/LeanCLI'):
+        #    self.Log(f'current_path, folders, files\n '
+        #             f'{current_path}, {folders}, {files}')
         # Convert JSON string to Pandas DataFrame
         # Retrieve JSON data from the file
         start_date_str = "20190101"
         end_date_str = "20220101"
-        symbol = "SPY"
+        trade_symbol = "SPY"
         self.benchmark_symbol = "SPY"
-        with open("config.json", "r") as file:
+        #with open("config.json", "r") as file:
+        strategy_config = LEAN_BASE_DIR + "strategy_config/sconfig.json"
+        with open(strategy_config, "r") as file:
+            self.Log(f'reading {strategy_config}')
             json_obj = json.load(file)
+            self.Log(json.dumps(json_obj, indent=4))
             start_date_str = json_obj["start_date"] if "start_date" in json_obj else start_date_str
             end_date_str = json_obj["end_date"] if "end_date" in json_obj else end_date_str
-            symbol = json_obj["symbol"] if "symbol" in json_obj else symbol
+            trade_symbol = json_obj["trade_symbol"] if "trade_symbol" in json_obj else trade_symbol
             self.benchmark_symbol = json_obj["benchmark_symbol"] if "benchmark_symbol" in json_obj else self.benchmark_symbol
-        # Read the start date from the environment variable
 
         start_date = datetime.strptime(start_date_str, "%Y%m%d")
         end_date = datetime.strptime(end_date_str, "%Y%m%d")
 
         self.Log(f"Environment Info: "
-                 f"start_date={start_date},end_date={end_date},symbol={symbol},"
+                 f"start_date={start_date},end_date={end_date},trade_symbol={trade_symbol},"
                  f"benchmark_symbol={self.benchmark_symbol}")
 
         self.SetStartDate(start_date.year, start_date.month, start_date.day)
@@ -41,7 +48,7 @@ class SpyBB(QCAlgorithm):
         self.SetCash(100000)  # Set Strategy Cash
 
         length = 30
-        self.symbol = self.AddEquity(symbol, Resolution.Hour).Symbol
+        self.symbol = self.AddEquity(trade_symbol, Resolution.Hour).Symbol
         self.bb = self.BB(self.symbol, length, 2, MovingAverageType.Simple, Resolution.Daily)
         self.rsi = self.RSI(self.symbol, length, resolution=Resolution.Daily)
         # self.sma = self.SMA(self.spy, length, Resolution.Daily)
