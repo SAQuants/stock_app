@@ -3,7 +3,7 @@ import subprocess
 import json
 import re
 
-lean_base_dir = 'lean_base/'
+lean_base_dir = '../lean_base/'
 strategy_config_file = '/strategy_config/sconfig.json'
 
 

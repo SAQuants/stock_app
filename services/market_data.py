@@ -3,8 +3,8 @@ from datetime import datetime
 
 supported_symbols = [
     {"symbol": "SPY", "name": "SPDR S&P 500 ETF Trust", "exchange": "AMEX"},
-    {"symbol": "VUG", "name": "US large-cap growth stocks", "exchange": "AMEX"},
-    {"symbol": "VTV", "name": "Developed-market large-cap stocks", "exchange": "AMEX"}
+    {"symbol": "AAPL", "name": "Apple Inc.", "exchange": "NASDAQ"},
+    {"symbol": "IBM", "name": "International Business Machines Corporations", "exchange": "NYSE"}
 ]
 
 
