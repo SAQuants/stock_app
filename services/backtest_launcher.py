@@ -2,16 +2,17 @@ import os
 import subprocess
 import json
 import re
+import pandas as pd
 
-lean_base_dir = '../lean_base/'
+lean_base_dir = 'lean_base/'
 strategy_config_file = '/strategy_config/sconfig.json'
 
 
 def get_lean_pathname():
     # print(f'CONDA_PREFIX:{os.getenv("CONDA_PREFIX")}, CONDA_DEFAULT_ENV:{os.getenv("CONDA_DEFAULT_ENV")}')
     lean_pathname = os.getenv('LEAN_PATH', '')
+    print(f'LEAN_PATH: {lean_pathname}')
     if os.path.isfile(lean_pathname):
-        print(f'lean installed: {lean_pathname}')
         return lean_pathname
     else:
         print(f'lean NOT installed')
@@ -31,15 +32,22 @@ def update_lean_json(lean_config_file, trade_symbol, start_date, end_date, bench
         file_obj.close()  # Close the JSON file
 
 
-def execute_backtest(backtest_name,
-                     trade_symbol="SPY", start_date="20220601",
-                     end_date="20230101", benchmark_symbol="SPY"):
+def execute_backtest(trade_symbol="SPY",
+                     backtest_name ="strategy_bb_rsi",
+                     start_date="2022-06-01", end_date="2023-01-01",
+                     benchmark_symbol="SPY"):
+    print(f'execute_backtest::getcwd() {os.getcwd()}')
+
     lean_pathname = get_lean_pathname()
     if lean_pathname is None:
-        return {"trade_symbol": trade_symbol,
+        return {"status": 418,
+                "trade_symbol": trade_symbol,
                 "backtest_name": backtest_name,
+                "start_date": start_date,
+                "end_date": end_date,
                 "benchmark_symbol": benchmark_symbol,
-                "backtest_result": "Lean not installed"}
+                "backtest_result": "Lean not installed"
+                }
     strategy_config_file_path = lean_base_dir + backtest_name + strategy_config_file
     update_lean_json(strategy_config_file_path, trade_symbol, start_date, end_date, benchmark_symbol)
     args = [lean_pathname, 'backtest', backtest_name]
@@ -51,14 +59,27 @@ def execute_backtest(backtest_name,
           f'return code={result.returncode}, '
           f'stdout={result.stdout}, '
           f'stderr={result.stderr}')
-    return {"symbol": trade_symbol, "backtest_name": backtest_name, "backtest_result": result.stdout}
-    pass
+
+    output_dir = re.findall('/backtests/(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})*', result.stdout)
+    output_dir = lean_base_dir + backtest_name + '/backtests/' + output_dir[0] + '/'
+    order_plot_path = output_dir + 'df_order_plot.csv'
+    df_order_plot = pd.read_csv(order_plot_path)
+    # print(df_order_plot)
+    return {"status": 200,
+            "trade_symbol": trade_symbol,
+            "backtest_name": backtest_name,
+            "start_date": start_date,
+            "end_date": end_date,
+            "benchmark_symbol": benchmark_symbol,
+            "output_dir": output_dir #,
+            # "df_order_plot": df_order_plot.to_json(orient="records")
+            }
 
 
 if __name__ == "__main__":
-    strategy = "strategy_bb_rsi"
-    result = execute_backtest(strategy, "IBM",
-                              "20180601", "20210101", "SPY")
-    output_dir = re.findall('/backtests/(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})*', result['backtest_result'])
-    output_path = lean_base_dir + strategy + '/backtests/' + output_dir[0] + '/'
-    print(f'backtest_result location: {output_path}')
+    # print(os.getcwd())
+    backtest_name = "strategy_bb_rsi"
+    result = execute_backtest("IBM", backtest_name,
+                              "2019-06-01", "2021-01-01", "SPY")
+    print(f'backtest_result location: {result["output_path"]}')
+    print(f'result: {result}')

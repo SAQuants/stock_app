@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 # $ uvicorn routes:app --reload
 from fastapi.templating import Jinja2Templates
 import json
@@ -23,7 +23,7 @@ def get_response_type(request: Request):
 
 
 @app.get("/")
-async def get_symbol_list(request: Request):
+def get_symbol_list(request: Request):
     # print(dir(request))
     # print(request.headers)
     symbol_info_list = get_supported_symbols()
@@ -37,15 +37,17 @@ async def get_symbol_list(request: Request):
 
 
 @app.get("/symbol/{symbol}")
-async def get_details(request: Request, symbol):
+def get_details(request: Request, symbol):
     # print(request.headers)
 
-    backtest = request.query_params.get('backtest', False)
-    # print(symbol, backtest)
-    if backtest:
-        return get_backtest_results(request, symbol, backtest)
-    else:
+    backtest = request.query_params.get('backtest', None)
+    start_date = request.query_params.get('start_date', None)
+    end_date = request.query_params.get('end_date', None)
+    print(f'get_details params: {symbol}, {backtest}, {start_date}, {end_date}')
+    if backtest is None:
         return get_symbol_data(request, symbol)
+    else:
+        return get_backtest_results(request, symbol, backtest, start_date, end_date)
 
 
 def get_symbol_data(request, symbol):
@@ -64,5 +66,13 @@ def get_symbol_data(request, symbol):
         return stock_ts.to_json()
 
 
-def get_backtest_results(request, symbol, backtest_name):
-    return execute_backtest(backtest_name, symbol)
+def get_backtest_results(request, symbol, backtest_name, start_date, end_date):
+    backtest_results = execute_backtest(symbol, backtest_name,  start_date, end_date)
+    # print(f'get_backtest_results::{backtest_results}')
+    if backtest_results["status"] != 200:
+        print(f'get_backtest_results --> HTTPException')
+        raise HTTPException(status_code=backtest_results["status"],
+                            detail=backtest_results)
+    else:
+        print(f'get_backtest_results --> Success')
+        return backtest_results

@@ -36,8 +36,8 @@ class SpyBB(QCAlgorithm):
             trade_symbol = json_obj["trade_symbol"] if "trade_symbol" in json_obj else trade_symbol
             self.benchmark_symbol = json_obj["benchmark_symbol"] if "benchmark_symbol" in json_obj else self.benchmark_symbol
 
-        start_date = datetime.strptime(start_date_str, "%Y%m%d")
-        end_date = datetime.strptime(end_date_str, "%Y%m%d")
+        start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
+        end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
 
         self.Log(f"Environment Info: "
                  f"start_date={start_date},end_date={end_date},trade_symbol={trade_symbol},"
@@ -169,7 +169,7 @@ class SpyBB(QCAlgorithm):
                                                                ]
 
     def OnEndOfAlgorithm(self) -> None:
-        self.df_order_plot.to_csv(f'{LEAN_RESULTS_DIR}/df_order_plot.csv')
-        self.df_timeseries.to_csv(f'{LEAN_RESULTS_DIR}/df_timeseries.csv')
+        self.df_order_plot.to_csv(f'{LEAN_RESULTS_DIR}/df_order_plot.csv', index=False)
+        self.df_timeseries.to_csv(f'{LEAN_RESULTS_DIR}/df_timeseries.csv', index=False)
         #self.Log(self.df_timeseries)
         self.Debug("Algorithm done")
