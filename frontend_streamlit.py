@@ -33,10 +33,10 @@ def extract_backtest_results(response_dict):
     return df_res
 
 
-def request_data(ticker, params):
+def request_data(symbol, params):
     # stock_data = yf.download(ticker, start=start_date, end=end_date)
     # stock_data = pd.read_json(io.StringIO(json_str))
-    res = requests.get(f"{backend_url}/symbol/{ticker}", params=params)
+    res = requests.get(f"{backend_url}/symbol/{symbol}", params=params)
     # print(f'res: {res}, res.json(): {res.json()}')
     if res.status_code != 200:
         print(res, res.text)
@@ -89,29 +89,44 @@ def plot_backtest(df_res):
 
 
 def main():
-    st.title("Stock Time Series Data App")
+    st.title("Algo Trading Interface v0.1")
 
     # User input for stock ticker
-    res = requests.get(backend_url)
-    if res.status_code != 200:
-        print(res, res.text)
+    resp_symbols = requests.get(backend_url+'/symbols')
+    if resp_symbols.status_code != 200:
+        print(resp_symbols, resp_symbols.text)
         return
+    # print(resp_symbols.json())
+    df_symbol = pd.DataFrame(resp_symbols.json())
 
-    df_symbol = pd.DataFrame(res.json())
-    print(df_symbol['symbol'].values)
+    resp_backtests = requests.get(backend_url+'/backtests')
+    if resp_backtests.status_code != 200:
+        print(resp_backtests, resp_backtests.text)
+        return
+    df_backtests = pd.DataFrame(resp_backtests.json())
+    # print(df_backtests['backtest'].values)
+
     date_format = "%Y-%m-%d"
-    col1, col2, col3 = st.columns([1, 1, 1])
+    col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
     with col1:
-        ib_ticker = st.selectbox("Enter Stock Ticker:", df_symbol['symbol'])
+        ib_ticker = st.selectbox("Select Stock Ticker", df_symbol['symbol'])
     with col2:
-        ib_start_dt = st.date_input("Start Date", datetime.strptime("2023-01-01", date_format))
+        ib_start_dt = st.date_input("Start Date",
+                                    datetime.strptime("2018-01-01", date_format),
+                                    min_value=datetime.strptime("1998-01-02", date_format),
+                                    max_value=datetime.strptime("2021-03-31", date_format))
     with col3:
-        ib_end_dt = st.date_input("End Date", datetime.strptime("2023-12-31", date_format))
+        ib_end_dt = st.date_input("End Date",
+                                  datetime.strptime("2021-01-31", date_format),
+                                  min_value=datetime.strptime("1998-01-02", date_format),
+                                  max_value=datetime.strptime("2021-03-31", date_format))
+    with col4:
+        ib_backtest = st.selectbox("Select Backtest", df_backtests['backtest'])
 
-    col1, col2, col3 = st.columns([1, 1, 1])
+    col1, col2, col3, col4 = st.columns([1, 1, 1,1])
     with col1:
         btn_ts = st.button('Get Time Series Data')
-    with col3:
+    with col4:
         btn_bt = st.button('Perform BackTest')
 
     # Button to fetch data
@@ -132,7 +147,7 @@ def main():
             params = {
                 'start_date': ib_start_dt,
                 'end_date': ib_end_dt,
-                'backtest': 'strategy_bb_rsi'
+                'backtest': ib_backtest
             }
             df_res = request_data(ib_ticker, params)
             df_res['ticker'] = ib_ticker

@@ -48,6 +48,7 @@ def execute_backtest(trade_symbol="SPY",
                 "benchmark_symbol": benchmark_symbol,
                 "backtest_result": "Lean not installed"
                 }
+    ## Uncomment after Testing -BEGIN##
     strategy_config_file_path = lean_base_dir + backtest_name + strategy_config_file
     update_lean_json(strategy_config_file_path, trade_symbol, start_date, end_date, benchmark_symbol)
     args = [lean_pathname, 'backtest', backtest_name]
@@ -62,8 +63,12 @@ def execute_backtest(trade_symbol="SPY",
 
     output_dir = re.findall('/backtests/(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})*', result.stdout)
     output_dir = lean_base_dir + backtest_name + '/backtests/' + output_dir[0] + '/'
-    order_plot_path = output_dir + 'df_order_plot.csv'
-    df_order_plot = pd.read_csv(order_plot_path)
+    ## Uncomment after Testing -END##
+    ## Comment after Testing -BEGIN##
+    # output_dir = lean_base_dir + backtest_name + '/backtests/' + 'aapl_example/'
+    ## Comment after Testing -BEGIN##
+    # order_plot_path = output_dir + 'df_order_plot.csv'
+    # df_order_plot = pd.read_csv(order_plot_path)
     # print(df_order_plot)
     return {"status": 200,
             "trade_symbol": trade_symbol,
