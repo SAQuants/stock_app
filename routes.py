@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request, HTTPException
-# $ uvicorn routes:app --reload
+# $ uvicorn --app-dir ./ routes:app --reload
 from fastapi.templating import Jinja2Templates
 import json
 import pandas as pd

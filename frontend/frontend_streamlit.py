@@ -1,6 +1,5 @@
 # pip list --format=freeze > requirements.txt
 import streamlit as st
-import yfinance as yf
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -9,7 +8,7 @@ import requests
 import io
 
 backend_url = 'http://127.0.0.1:8000'
-# streamlit run frontend_streamlit.py
+# streamlit run front_end/frontend_streamlit.py
 
 
 def extract_timeseries(response_dict):
