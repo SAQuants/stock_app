@@ -29,7 +29,6 @@ COPY . /app/
 CMD python -m uvicorn --app-dir ./  --reload --host 0.0.0.0 --port 8000 routes:app
 # gunicorn -w 2 -k unicornworkers.Unicornworker routes:app
 
-
 # docker build -t sappv01 .
 # docker run --rm -it -p 8000:8000 sappv01
 # docker run --privileged=true -v /var/run/docker.sock:/var/run/docker.sock --rm -it -p 8000:8000 sappv01
