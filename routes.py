@@ -23,6 +23,7 @@ def get_response_type(request: Request):
         return 'data'
 
 
+@app.get("/")
 @app.get("/symbols")
 def get_symbol_list(request: Request):
     # print(dir(request))
