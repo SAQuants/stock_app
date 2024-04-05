@@ -1,0 +1,3 @@
+# These aliases and environment variables are needed
+alias activate='cd /home/azureuser/stock_app && source venv/bin/activate'
+export LEAN_PATH=/home/azureuser/stock_app/venv/bin/lean
