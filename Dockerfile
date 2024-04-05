@@ -26,7 +26,7 @@ ENV LEAN_PATH="/app/venv/bin/lean"
 ENTRYPOINT []
 COPY . /app/
 # CMD ["uvicorn", "--app-dir", "./", "routes:app", "--reload"]
-CMD python -m uvicorn --app-dir ./  --reload --host 0.0.0.0 --port 8000 routes:app
+CMD python -m uvicorn --app-dir ./  --reload --host 0.0.0.0 --port 8080 routes:app
 # gunicorn -w 2 -k unicornworkers.Unicornworker routes:app
 
 # docker build -t sappv01 .

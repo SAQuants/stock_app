@@ -1,0 +1,15 @@
+# These aliases and environment variables are needed
+alias activate='cd /home/azureuser/stock_app && source venv/bin/activate'
+export LEAN_PATH=/home/azureuser/stock_app/venv/bin/lean
+
+# To test lean running (after exporting LEAN_PATH)
+cd /home/azureuser/stock_app/lean_base
+$LEAN_PATH backtest strategy_bb_rsi
+
+# starting uvicorn server
+# with port
+alias runserver='python -m uvicorn --app-dir ./  --reload --host 0.0.0.0 --port 8080 routes:app'
+http://vm4lean.northeurope.cloudapp.azure.com:8080/
+# without port
+alias runserver='python -m uvicorn --app-dir ./  --reload --host 0.0.0.0 routes:app'
+http://vm4lean.northeurope.cloudapp.azure.com/

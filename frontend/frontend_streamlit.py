@@ -7,7 +7,7 @@ from datetime import datetime
 import requests
 import io
 
-backend_url = 'https://fastapi-sappv01.azurewebsites.net/' # 'https://stock-app2.azurewebsites.net:8000' # 'http://127.0.0.1:8000'
+backend_url = 'http://vm4lean.northeurope.cloudapp.azure.com:8080' # 'http://127.0.0.1:8000'
 # streamlit run front_end/frontend_streamlit.py
 
 
