@@ -26,7 +26,7 @@ create_venv() {
         echo "virtual environment does not exists, will create now"
     fi
 
-    python3 -m venv "$env_name"
+    python3 -m virtualenv "$env_name"
     source "$env_name/bin/activate"
     pip install -U pip
     if [ -f "requirements.txt" ]; then
