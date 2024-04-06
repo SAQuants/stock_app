@@ -70,14 +70,25 @@ def execute_backtest(trade_symbol="SPY",
     # order_plot_path = output_dir + 'df_order_plot.csv'
     # df_order_plot = pd.read_csv(order_plot_path)
     # print(df_order_plot)
+
+    order_plot_path = output_dir + '/df_order_plot.csv'
+    df_op = pd.read_csv(order_plot_path)
+    df_op.set_index('Time', inplace=True)
+    timeseries_path = output_dir + '/df_timeseries.csv'
+    df_ts = pd.read_csv(timeseries_path)
+    df_ts.set_index('Time', inplace=True)
+    df_res = pd.concat([df_ts,df_op], axis=1)
+    df_res.drop(columns=['OrderID', 'Status', 'Quantity', 'OrderFee', 'FillPrice'], inplace=True)
+
+
     return {"status": 200,
             "trade_symbol": trade_symbol,
             "backtest_name": backtest_name,
             "start_date": start_date,
             "end_date": end_date,
             "benchmark_symbol": benchmark_symbol,
-            "output_dir": output_dir #,
-            # "df_order_plot": df_order_plot.to_json(orient="records")
+            "output_dir": output_dir,
+            "df_order_plot": df_res.to_json(orient="records")
             }
 
 
