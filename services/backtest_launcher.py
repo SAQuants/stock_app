@@ -79,6 +79,8 @@ def execute_backtest(trade_symbol="SPY",
     df_ts.set_index('Time', inplace=True)
     df_res = pd.concat([df_ts,df_op], axis=1)
     df_res.drop(columns=['OrderID', 'Status', 'Quantity', 'OrderFee', 'FillPrice'], inplace=True)
+    df_res.reset_index(inplace=True)
+    df_res.to_csv(output_dir + '/df_results.csv')
 
 
     return {"status": 200,
