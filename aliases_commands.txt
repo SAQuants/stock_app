@@ -8,10 +8,14 @@ $LEAN_PATH backtest strategy_bb_rsi
 
 # starting uvicorn server
 # with port
-alias runserver='python -m uvicorn --app-dir ./  --reload --host 0.0.0.0 --port 8080 routes:app'
+alias runserver='python -m uvicorn --app-dir ./  --reload --host 0.0.0.0 --port 8080 routes:app > log.txt 2>&1 &'
+#to dev null
+# alias runserver='python -m uvicorn --app-dir ./  --reload --host 0.0.0.0 --port 8080 routes:app > /dev/null 2>&1 &'
 http://vm4lean.northeurope.cloudapp.azure.com:8080/
 # without port
-alias runserver='python -m uvicorn --app-dir ./  --reload --host 0.0.0.0 routes:app'
+alias runserver='python -m uvicorn --app-dir ./  --reload --host 0.0.0.0 routes:app > log.txt 2>&1 &'
 http://vm4lean.northeurope.cloudapp.azure.com/
 
-
+# see the process id of the process that was started
+$ pstree -p azureuser
+$ ps -e
