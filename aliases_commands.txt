@@ -20,4 +20,5 @@ http://vm4lean.northeurope.cloudapp.azure.com/
 
 # see the process id of the process that was started
 $ pstree -p azureuser
-$ ps -e
+$ ps -ef | grep uvicorn
+$ pkill -P $uvicorn_process_id
