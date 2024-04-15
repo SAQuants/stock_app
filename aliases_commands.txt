@@ -8,7 +8,9 @@ $LEAN_PATH backtest strategy_bb_rsi
 
 # starting uvicorn server
 # with port
-alias runserver='python -m uvicorn --app-dir ./  --reload --host 0.0.0.0 --port 8080 routes:app > log.txt 2>&1 &'
+# alias runserver='python -m uvicorn --app-dir ./  --reload --host 0.0.0.0 --port 8080 routes:app > log.txt 2>&1 &'
+# with port WITHOUT restart
+alias runserver='python -m uvicorn --app-dir ./  --host 0.0.0.0 --port 8080 routes:app > log.txt 2>&1 &'
 #to dev null
 # alias runserver='python -m uvicorn --app-dir ./  --reload --host 0.0.0.0 --port 8080 routes:app > /dev/null 2>&1 &'
 http://vm4lean.northeurope.cloudapp.azure.com:8080/

@@ -1,8 +1,9 @@
 from fastapi import FastAPI, Request, HTTPException
-# $ uvicorn --app-dir ./ routes:app --reload
+# local start -->$ uvicorn --app-dir ./ routes:app --reload
 from fastapi.templating import Jinja2Templates
-import json
-import pandas as pd
+import os
+import fastapi
+import signal
 
 from services.static_data import get_supported_symbols, get_symbol_info, get_supported_backtests
 from services.market_data import get_symbol_ts
@@ -22,6 +23,15 @@ def get_response_type(request: Request):
         print('response_type: data')
         return 'data'
 
+
+@app.get("/shutdown")
+def shutdown():
+    os.kill(os.getpid(), signal.SIGTERM)
+    return fastapi.Response(status_code=200, content='shutdown: Server shutting down...')
+
+@app.on_event('shutdown')
+def on_shutdown():
+    print('on_shutdown: Server shutting down...')
 
 @app.get("/")
 @app.get("/symbols")
