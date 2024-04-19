@@ -99,5 +99,5 @@ if __name__ == "__main__":
     backtest_name = "strategy_bb_rsi"
     result = execute_backtest("IBM", backtest_name,
                               "2019-06-01", "2021-01-01", "SPY")
-    print(f'backtest_result location: {result["output_path"]}')
+    print(f'backtest_result output_dir: {result["output_dir"]}')
     print(f'result: {result}')

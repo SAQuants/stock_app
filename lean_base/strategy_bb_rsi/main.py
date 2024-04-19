@@ -2,8 +2,11 @@
 from AlgorithmImports import *
 from datetime import datetime
 import json
-LEAN_RESULTS_DIR ='/Results'
+
+LEAN_RESULTS_DIR = '/Results'
 LEAN_BASE_DIR = '/LeanCLI/'
+
+
 # endregion
 
 class SpyBB(QCAlgorithm):
@@ -32,7 +35,8 @@ class SpyBB(QCAlgorithm):
             start_date_str = json_obj["start_date"] if "start_date" in json_obj else start_date_str
             end_date_str = json_obj["end_date"] if "end_date" in json_obj else end_date_str
             trade_symbol = json_obj["trade_symbol"] if "trade_symbol" in json_obj else trade_symbol
-            self.benchmark_symbol = json_obj["benchmark_symbol"] if "benchmark_symbol" in json_obj else self.benchmark_symbol
+            self.benchmark_symbol = json_obj[
+                "benchmark_symbol"] if "benchmark_symbol" in json_obj else self.benchmark_symbol
 
         start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
         end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
@@ -68,7 +72,6 @@ class SpyBB(QCAlgorithm):
                          self.time_rules.before_market_close(trade_symbol),
                          self.get_eod_stats)
 
-
         self.df_order_plot = pd.DataFrame(columns=['Time',
                                                    'OrderID', 'Symbol',
                                                    'Status', 'Quantity',
@@ -80,11 +83,11 @@ class SpyBB(QCAlgorithm):
 
         stock_plot = Chart('Trade Plot')
         stock_plot.add_series(Series('Buy', SeriesType.SCATTER, '$',
-                                   Color.green, ScatterMarkerSymbol.TRIANGLE))
+                                     Color.GREEN, ScatterMarkerSymbol.TRIANGLE))
         stock_plot.add_series(Series('Sell', SeriesType.SCATTER, '$',
-                                   Color.red, ScatterMarkerSymbol.TRIANGLE_DOWN))
+                                     Color.RED, ScatterMarkerSymbol.TRIANGLE_DOWN))
         stock_plot.add_series(Series('Liquidate', SeriesType.SCATTER, '$',
-                                   Color.blue, ScatterMarkerSymbol.DIAMOND))
+                                     Color.BLUE, ScatterMarkerSymbol.DIAMOND))
         self.add_chart(stock_plot)
         returnPlot = Chart('Cumulative Return Comparison')
         self.add_chart(returnPlot)
@@ -119,7 +122,7 @@ class SpyBB(QCAlgorithm):
         self.plot("Trade Plot", "bb-LowerBand", self.bb_.LowerBand.Current.Value)
         self.plot("Trade Plot", "Benchmark", self.benchmark.evaluate(self.time))
         # self.Plot("Trade Plot", "SMA", self.sma.Current.Value)
-        self.df_timeseries.loc[len(self.df_timeseries)] = [self.time,price,
+        self.df_timeseries.loc[len(self.df_timeseries)] = [self.time, price,
                                                            self.bb_.MiddleBand.Current.Value,
                                                            self.bb_.UpperBand.Current.Value,
                                                            self.bb_.LowerBand.Current.Value,
@@ -181,10 +184,10 @@ class SpyBB(QCAlgorithm):
     def get_eod_stats(self):
         # log the total equity, realized and unrealized profit
         self.debug(f"Time: {self.time}, "
-                    f"total_profit: {self.portfolio.total_profit}, "
-                    f"total_net_profit: {self.portfolio.total_net_profit}, "
-                    f"Total total_portfolio_value: {self.portfolio.total_portfolio_value}, "
-                    f"Unrealized Profit: {self.portfolio.total_unrealised_profit}, "
-                    f"TotalFees: {self.portfolio.total_fees}, "
-                    f"Cash: {self.portfolio.cash}"
-                )
+                   f"total_profit: {self.portfolio.total_profit}, "
+                   f"total_net_profit: {self.portfolio.total_net_profit}, "
+                   f"Total total_portfolio_value: {self.portfolio.total_portfolio_value}, "
+                   f"Unrealized Profit: {self.portfolio.total_unrealised_profit}, "
+                   f"TotalFees: {self.portfolio.total_fees}, "
+                   f"Cash: {self.portfolio.cash}"
+                   )
