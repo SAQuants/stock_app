@@ -38,6 +38,7 @@ def execute_backtest(trade_symbol="SPY",
                      benchmark_symbol="SPY"):
     print(f'execute_backtest::getcwd() {os.getcwd()}')
 
+    ## Uncomment after Testing -BEGIN##
     lean_pathname = get_lean_pathname()
     if lean_pathname is None:
         return {"status": 418,
@@ -48,7 +49,6 @@ def execute_backtest(trade_symbol="SPY",
                 "benchmark_symbol": benchmark_symbol,
                 "backtest_result": "Lean not installed"
                 }
-    ## Uncomment after Testing -BEGIN##
     strategy_config_file_path = lean_base_dir + backtest_name + strategy_config_file
     update_lean_json(strategy_config_file_path, trade_symbol, start_date, end_date, benchmark_symbol)
     args = [lean_pathname, 'backtest', backtest_name]
@@ -64,12 +64,10 @@ def execute_backtest(trade_symbol="SPY",
     output_dir = re.findall('/backtests/(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})*', result.stdout)
     output_dir = lean_base_dir + backtest_name + '/backtests/' + output_dir[0] + '/'
     ## Uncomment after Testing -END##
-    ## Comment after Testing -BEGIN##
-    # output_dir = lean_base_dir + backtest_name + '/backtests/' + 'aapl_example/'
-    ## Comment after Testing -BEGIN##
-    # order_plot_path = output_dir + 'df_order_plot.csv'
-    # df_order_plot = pd.read_csv(order_plot_path)
-    # print(df_order_plot)
+    ## Comment BEFORE Testing -BEGIN##
+    ## output_dir = lean_base_dir + backtest_name + '/backtests/' + 'spy_with_total_value/'
+    ## Comment BEFORE Testing -BEGIN##
+
 
     order_plot_path = output_dir + '/df_order_plot.csv'
     df_op = pd.read_csv(order_plot_path)
@@ -82,6 +80,18 @@ def execute_backtest(trade_symbol="SPY",
     df_res.reset_index(inplace=True)
     df_res.to_csv(output_dir + '/df_results.csv')
 
+    df_analytics_path = output_dir + '/df_analytics.csv'
+    df_analytics = pd.read_csv(df_analytics_path)
+    # df_analytics['daily_pnl'] = df_analytics['total_portfolio_value'] - df_analytics['total_portfolio_value'].shift(1)
+    df_analytics['total_pnl'] = df_analytics['total_portfolio_value'] - df_analytics['total_portfolio_value'].iloc[0]
+    df_analytics['total_pnl_perc'] = df_analytics['total_pnl'] / df_analytics['total_portfolio_value'].iloc[0]
+    df_analytics['max_upto_now'] = df_analytics['total_portfolio_value'].cummax()
+    df_analytics['drawdown'] = df_analytics.apply(
+                                        lambda df_row: df_row['total_portfolio_value'] - df_row['max_upto_now']
+                                        if df_row['total_portfolio_value'] < df_row['max_upto_now'] else 0
+                                    , axis=1)
+    df_analytics['drawdown_perc'] = df_analytics['drawdown'] / df_analytics['max_upto_now']
+    df_analytics.to_csv(output_dir + '/df_pnl.csv')
 
     return {"status": 200,
             "trade_symbol": trade_symbol,
@@ -90,7 +100,8 @@ def execute_backtest(trade_symbol="SPY",
             "end_date": end_date,
             "benchmark_symbol": benchmark_symbol,
             "output_dir": output_dir,
-            "df_order_plot": df_res.to_json(orient="records")
+            "df_order_plot": df_res.to_json(orient="records"),
+            "df_analytics": df_analytics.to_json(orient="records")
             }
 
 

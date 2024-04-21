@@ -53,10 +53,11 @@ class SpyBB(QCAlgorithm):
         self.symbol = self.add_equity(trade_symbol, Resolution.HOUR).symbol
         self.bb_ = self.bb(self.symbol, length, 2, MovingAverageType.SIMPLE, Resolution.DAILY)
         self.rsi_ = self.rsi(self.symbol, length, resolution=Resolution.DAILY)
-        # self.sma = self.SMA(self.spy, length, Resolution.Daily)
+        self.sr_ = self.sr(self.symbol,length,0.03)
         # History warm up for shortcut helper BollingerBand & SMA indicator
         self.warm_up_indicator(self.symbol, self.bb_)
         self.warm_up_indicator(self.symbol, self.rsi_)
+        self.warm_up_indicator(self.symbol,self.sr_)
         # long method to warm the indicator
         # closing_prices = self.History(self.spy, length, Resolution.Hour)["close"]
         # for time, price in closing_prices.loc[self.spy].items():
@@ -80,6 +81,8 @@ class SpyBB(QCAlgorithm):
         self.df_timeseries = pd.DataFrame(columns=['Time', 'Price', 'bb-MiddleBand',
                                                    'bb-UpperBand', 'bb-LowerBand',
                                                    'Benchmark'])
+
+        self.df_analytics = pd.DataFrame(columns=['Time', 'total_portfolio_value', 'sharpe_ratio'])
 
         stock_plot = Chart('Trade Plot')
         stock_plot.add_series(Series('Buy', SeriesType.SCATTER, '$',
@@ -121,7 +124,6 @@ class SpyBB(QCAlgorithm):
         self.plot("Trade Plot", "bb-UpperBand", self.bb_.UpperBand.Current.Value)
         self.plot("Trade Plot", "bb-LowerBand", self.bb_.LowerBand.Current.Value)
         self.plot("Trade Plot", "Benchmark", self.benchmark.evaluate(self.time))
-        # self.Plot("Trade Plot", "SMA", self.sma.Current.Value)
         self.df_timeseries.loc[len(self.df_timeseries)] = [self.time, price,
                                                            self.bb_.MiddleBand.Current.Value,
                                                            self.bb_.UpperBand.Current.Value,
@@ -178,16 +180,27 @@ class SpyBB(QCAlgorithm):
     def on_end_of_algorithm(self) -> None:
         self.df_order_plot.to_csv(f'{LEAN_RESULTS_DIR}/df_order_plot.csv', index=False)
         self.df_timeseries.to_csv(f'{LEAN_RESULTS_DIR}/df_timeseries.csv', index=False)
+        self.df_analytics.to_csv(f'{LEAN_RESULTS_DIR}/df_analytics.csv', index=False)
         #self.log(self.df_timeseries)
         self.debug("Algorithm done")
 
     def get_eod_stats(self):
         # log the total equity, realized and unrealized profit
-        self.debug(f"Time: {self.time}, "
-                   f"total_profit: {self.portfolio.total_profit}, "
-                   f"total_net_profit: {self.portfolio.total_net_profit}, "
-                   f"Total total_portfolio_value: {self.portfolio.total_portfolio_value}, "
-                   f"Unrealized Profit: {self.portfolio.total_unrealised_profit}, "
-                   f"TotalFees: {self.portfolio.total_fees}, "
-                   f"Cash: {self.portfolio.cash}"
-                   )
+        # self.debug(f"Time: {self.time}, "
+        #            f"total_profit: {self.portfolio.total_profit}, "
+        #            f"total_net_profit: {self.portfolio.total_net_profit}, "
+        #            f"Total total_portfolio_value: {self.portfolio.total_portfolio_value}, "
+        #            f"Unrealized Profit: {self.portfolio.total_unrealised_profit}, "
+        #            f"TotalFees: {self.portfolio.total_fees}, "
+        #            f"Cash: {self.portfolio.cash}"
+        #            )
+
+        # self.debug(f"Time: {self.time}, "
+        #            f"Total total_portfolio_value: {self.portfolio.total_portfolio_value}, "
+        #            f"Share Ratio: {self.sr_}"
+        #            )
+
+        self.df_analytics.loc[len(self.df_analytics)] = [self.time,
+                                                         self.portfolio.total_portfolio_value,
+                                                         self.sr_]
+
