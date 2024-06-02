@@ -1,6 +1,19 @@
+# set virtual environment
+$ python -m venv venv
+$ source venv/bin/activate
+$ pip install -r requirements.txt
+# update all outdated libraries
+# https://stackoverflow.com/questions/2720014/how-to-upgrade-all-python-packages-with-pip
+$ pip install -U `pip list --outdated | awk 'NR>2 {print $1}'`
+
 # These aliases and environment variables are needed
 alias activate='cd /home/azureuser/stock_app_be && source venv/bin/activate'
 export LEAN_PATH=/home/azureuser/stock_app_be/venv/bin/lean
+
+#local lean path
+export LEAN_PATH=/Users/anirudh/miniconda3/envs/saquants/bin/lean
+export LEAN_PATH=/Users/anirudh/Documents/Python/GitHub/stock_app_be/venv/bin/lean
+
 
 # To test lean running (after exporting LEAN_PATH)
 cd /home/azureuser/stock_app_be/lean_base
